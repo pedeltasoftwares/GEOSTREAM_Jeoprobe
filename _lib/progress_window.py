@@ -14,7 +14,7 @@ def create_progress_window(title_window,ico_name_fime,text_progress):
     ventana_progreso = tkinter.Toplevel()
     ventana_progreso.title(title_window)
     ventana_progreso.resizable(False, False)
-    width = 400
+    width = 500
     height = 100
     screen_width = ventana_progreso.winfo_screenwidth()
     screen_height = ventana_progreso.winfo_screenheight()

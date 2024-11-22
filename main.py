@@ -22,7 +22,7 @@ if verificar_mac_y_ejecutar_programa():
     menu_window = CTk()
     #Geometría
     width = 300
-    height = 200
+    height = 100
     screen_width = menu_window.winfo_screenwidth()
     screen_height = menu_window.winfo_screenheight()
     x = (screen_width - width) // 2
