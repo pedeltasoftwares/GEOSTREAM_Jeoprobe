@@ -238,9 +238,6 @@ EJECUTA EL MÓDULO DE MASW
 """
 def masw_module(file_content,inputs_path):
 
-    #Crea la ventana de progreso
-    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("MASW - Generando memorias","logo.ico",f"0/{len(list(file_content.keys()))-3}")
-
     #Cierra todos los procesos de excel abiertos
     kill_excel_processes()
     time.sleep(2)
@@ -273,6 +270,9 @@ def masw_module(file_content,inputs_path):
                 shutil.rmtree(ruta_elemento)  
             else:
                 os.remove(ruta_elemento)
+
+    #Crea la ventana de progreso
+    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("MASW - Generando memorias","logo.ico",f"0/{len(list(file_content.keys()))-3}")
 
     #Itera por los archivos
     cont = 1
