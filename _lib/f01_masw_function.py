@@ -29,7 +29,7 @@ def open_masw_window(menu_window,images_path):
     # Nombre de la ventana
     window.title("MASW")
     # Ícono ventana
-    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "formulario-de-llenado.ico")))
+    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "masw.ico")))
     # Resizable
     window.resizable(False, False)
     window.grab_set()  # Esto hace que la ventana sea modal
@@ -126,8 +126,7 @@ def open_masw_window(menu_window,images_path):
                         file_content[level]["separacion"] = separacion
 
 
-
-        #Función para adjuntar archivo del input
+    #Función para adjuntar archivo del input
     def open_file_path(directory_entry, file_content):
 
         nonlocal input_path
@@ -259,9 +258,9 @@ def masw_module(file_content,inputs_path):
     documents_path = os.path.expanduser("~\\Documents")
 
     # Crea la carpeta para almacenar
-    results_path = f'{documents_path}//MASW_Results//'
+    results_path = f'{documents_path}//GEOSTREAM//MASW'
     if not os.path.exists(results_path):
-        os.mkdir(results_path)
+        os.makedirs(results_path)
     else:
         # Elimina los archivos adentro si la carpeta ya existe
         for elemento in os.listdir(results_path):
@@ -280,14 +279,14 @@ def masw_module(file_content,inputs_path):
         if key != "cliente" and key != "proyecto" and key != "OS":
 
             #Copia el template
-            os.mkdir(f'{documents_path}//MASW_Results//{key}')
-            shutil.copy(f'{templates_path}//template lineas.xlsm', f'{documents_path}//MASW_Results//{key}//template lineas.xlsm')
+            os.mkdir(f'{documents_path}//GEOSTREAM//MASW//{key}')
+            shutil.copy(f'{templates_path}//template lineas.xlsm', f'{documents_path}///GEOSTREAM//MASW//{key}//template lineas.xlsm')
 
             #Abre el template
             app = xw.App(visible=False)  
             app.display_alerts = False 
             app.screen_updating = False
-            libro = xw.Book(f'{documents_path}//MASW_Results//{key}//template lineas.xlsm', update_links=True)
+            libro = xw.Book(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsm', update_links=True)
 
             #Modifica hoja A1
             modificar_hoja_A1(libro,file_content,key)
@@ -324,16 +323,14 @@ def masw_module(file_content,inputs_path):
     merger = PyPDF2.PdfMerger()
     for key in list(file_content.keys()):
         if key != "cliente" and key != "proyecto" and key != "OS":
-            merger.append(f'{documents_path}//MASW_Results//{key}//{key}_combinado.pdf')
+            merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
 
     # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//MASW_Results//combinado.pdf')
+    merger.write(f'{documents_path}//GEOSTREAM//MASW//combinado.pdf')
     merger.close()
 
     ventana_progreso.destroy()
     tkinter.messagebox.showinfo("Info","Memorias generadas. Revisar en Documentos.")
-
-
 
 def modificar_hoja_A1(libro,file_content,key):
 
@@ -607,7 +604,7 @@ def save_to_pdf(libro, key, documents_path ):
         hoja = libro.sheets[sheet_name]
 
         #Guarda el pdf
-        output_pdf_path = f'{documents_path}//MASW_Results//{key}//{sheet_name}.pdf'
+        output_pdf_path = f'{documents_path}//GEOSTREAM//MASW//{key}//{sheet_name}.pdf'
 
         hoja.api.ExportAsFixedFormat(
             Type=0,  # 0 es para PDF
@@ -621,16 +618,12 @@ def save_to_pdf(libro, key, documents_path ):
     #Compila en uno solo
     merger = PyPDF2.PdfMerger()
     for pdf in sheet_names:
-        merger.append(f'{documents_path}//MASW_Results//{key}//{pdf}.pdf')
+        merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
 
     # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//MASW_Results//{key}//{key}_combinado.pdf')
+    merger.write(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
     merger.close()
 
     for pdf in sheet_names:
-        os.remove(f'{documents_path}//MASW_Results//{key}//{pdf}.pdf')
-
-
-
-
+        os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
 
