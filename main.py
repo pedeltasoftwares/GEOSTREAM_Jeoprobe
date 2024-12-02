@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 from _lib.f01_masw_function import open_masw_window
 from _lib.f02_ter_function import open_ter_window
 from _lib.f03_spac_function import open_spac_window
+from _lib.f04_lrs_function import open_lrs_window
 
 #Paths
 images_path = get_file_paths("_images")
@@ -20,11 +21,16 @@ if verificar_mac_y_ejecutar_programa():
     def ejecutar_masw():
         open_masw_window(menu_window,images_path)
 
+    def ejecutar_spac():
+        open_spac_window(menu_window,images_path)
+
+    def ejecutar_lrs():
+        open_lrs_window(menu_window,images_path)
+
     def ejecutar_ter():
         open_ter_window(menu_window,images_path)
     
-    def ejecutar_spac():
-        open_spac_window(menu_window,images_path)
+    
 
     #Inicializa la ventana
     menu_window = CTk()
@@ -67,7 +73,7 @@ if verificar_mac_y_ejecutar_programa():
     spac_image = Image.open(os.path.join(images_path, "spac.png"))
     spac_image = spac_image.resize((40, 30), Image.LANCZOS)
     spac_image_tk = ImageTk.PhotoImage(spac_image)
-    ter = CTkButton(master=menu_window, 
+    spac = CTkButton(master=menu_window, 
                     text="SPAC", 
                     image = spac_image_tk,
                     width=180, 
@@ -81,7 +87,27 @@ if verificar_mac_y_ejecutar_programa():
                     border_width=2,
                     border_color="#606060",
                     command=ejecutar_spac)
-    ter.place(x=60, y=80)
+    spac.place(x=60, y=80)
+
+    #Botón LRS
+    lrs_image = Image.open(os.path.join(images_path, "lrs.png"))
+    lrs_image = lrs_image.resize((40, 30), Image.LANCZOS)
+    lrs_image_tk = ImageTk.PhotoImage(lrs_image)
+    lrs = CTkButton(master=menu_window, 
+                    text="LRS", 
+                    image = lrs_image_tk,
+                    width=180, 
+                    height=40, 
+                    compound="left",
+                    font=('Gothic A1',15),
+                    fg_color="#3A3A3A",
+                    hover_color="#4C4C4C",
+                    text_color="#E0E0E0",
+                    corner_radius=5,
+                    border_width=2,
+                    border_color="#606060",
+                    command=ejecutar_lrs)
+    lrs.place(x=60, y=135)
 
     #Botón TER
     ter_image = Image.open(os.path.join(images_path, "ter.png"))
@@ -101,6 +127,7 @@ if verificar_mac_y_ejecutar_programa():
                     border_width=2,
                     border_color="#606060",
                     command=ejecutar_ter)
-    ter.place(x=60, y=135)
+    ter.place(x=60, y=190)
+
     #Ejecuta la ventana
     menu_window.mainloop()

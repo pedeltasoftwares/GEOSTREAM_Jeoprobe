@@ -13,6 +13,7 @@ import time
 import math
 import PyPDF2
 from _lib.progress_window import create_progress_window
+from _lib.set_cell_border import set_border
 
 def open_spac_window(menu_window,images_path):
 
@@ -29,7 +30,7 @@ def open_spac_window(menu_window,images_path):
     # Nombre de la ventana
     window.title("SPAC")
     # Ícono ventana
-    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "SPAC.ico")))
+    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "spac.ico")))
     # Resizable
     window.resizable(False, False)
     window.grab_set()  # Esto hace que la ventana sea modal
@@ -320,10 +321,10 @@ def spac_module(file_content,inputs_path):
     merger = PyPDF2.PdfMerger()
     for key in list(file_content.keys()):
         if key != "cliente" and key != "proyecto" and key != "OS":
-            merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
+            merger.append(f'{documents_path}//GEOSTREAM//SPAC//{key}//{key}_combinado.pdf')
 
     # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//GEOSTREAM//MASW//combinado.pdf')
+    merger.write(f'{documents_path}//GEOSTREAM//SPAC//combinado.pdf')
     merger.close()
 
     ventana_progreso.destroy()
@@ -479,60 +480,54 @@ def modificar_modulos_elasticos(libro,key):
         #Promedio de profundidad
         hoja_modulos_elasticos[f"I{fila}"].value = round(  hoja_modulos_elasticos[f"A{fila}"].value, 1)
         hoja_modulos_elasticos.range(f"I{fila}").api.HorizontalAlignment = -4108
+        set_border(hoja_modulos_elasticos,"I",fila)
 
-        #borde
-        for border_id in range(1, 5):
-            hoja_modulos_elasticos.range(f"I{fila}").api.Borders(border_id).LineStyle = 1  
-    
         #Promedio de vs
         hoja_modulos_elasticos[f"J{fila}"].value = round( hoja_modulos_elasticos[f"B{fila}"].value, 1) 
         hoja_modulos_elasticos.range(f"J{fila}").api.HorizontalAlignment = -4108
-        for border_id in range(1, 5):
-            hoja_modulos_elasticos.range(f"J{fila}").api.Borders(border_id).LineStyle = 1  
+        set_border(hoja_modulos_elasticos,"J",fila)
         
         if fila != 12:
             #Gamma saturado
             hoja_modulos_elasticos[f"L{fila}"].value = round( 8.32 * math.log10( hoja_modulos_elasticos[f"J{fila}"].value )  - 
                                                                 1.61 * math.log10(hoja_modulos_elasticos[f"I{fila}"].value ), 1)
             hoja_modulos_elasticos.range(f"L{fila}").api.HorizontalAlignment = -4108
-            for border_id in range(1, 5):
-                hoja_modulos_elasticos.range(f"L{fila}").api.Borders(border_id).LineStyle = 1  
+            set_border(hoja_modulos_elasticos,"L",fila)
             
             #Go
             hoja_modulos_elasticos[f"M{fila}"].value = round(  (hoja_modulos_elasticos[f"L{fila}"].value / 10) * hoja_modulos_elasticos[f"J{fila}"].value  ** 2, 0)
             hoja_modulos_elasticos.range(f"M{fila}").api.HorizontalAlignment = -4108
-            for border_id in range(1, 5):
-                hoja_modulos_elasticos.range(f"M{fila}").api.Borders(border_id).LineStyle = 1 
+            set_border(hoja_modulos_elasticos,"M",fila)
 
             #Eo
             hoja_modulos_elasticos[f"N{fila}"].value = round( 2 * hoja_modulos_elasticos[f"M{fila}"].value * ( 1 + 0.33), 0)
             hoja_modulos_elasticos.range(f"N{fila}").api.HorizontalAlignment = -4108
-            for border_id in range(1, 5):
-                hoja_modulos_elasticos.range(f"N{fila}").api.Borders(border_id).LineStyle = 1 
+            set_border(hoja_modulos_elasticos,"N",fila)
 
             #Nequiv
             if round(( (hoja_modulos_elasticos[f"M{fila}"].value / a) ** b ) * efic ,0) < 80:
 
                 hoja_modulos_elasticos[f"K{fila}"].value = round(( (hoja_modulos_elasticos[f"M{fila}"].value / a) ** b ) * efic ,0)
                 hoja_modulos_elasticos.range(f"K{fila}").api.HorizontalAlignment = -4108
-                for border_id in range(1, 5):
-                    hoja_modulos_elasticos.range(f"K{fila}").api.Borders(border_id).LineStyle = 1 
+                set_border(hoja_modulos_elasticos,"K",fila)
 
             else:
                 hoja_modulos_elasticos[f"K{fila}"].value = "RECHAZO"
                 hoja_modulos_elasticos.range(f"K{fila}").api.HorizontalAlignment = -4108
-                for border_id in range(1, 5):
-                    hoja_modulos_elasticos.range(f"K{fila}").api.Borders(border_id).LineStyle = 1 
+                set_border(hoja_modulos_elasticos,"K",fila)
 
         
     #Completa la primera linea
     hoja_modulos_elasticos["L12"].value = hoja_modulos_elasticos["L13"].value 
     hoja_modulos_elasticos["M12"].value = round(  (hoja_modulos_elasticos["L12"].value / 10) * hoja_modulos_elasticos["J12"].value  ** 2, 0)
+    set_border(hoja_modulos_elasticos,"M",12)  
     hoja_modulos_elasticos["N12"].value = round( 2 * hoja_modulos_elasticos["M12"].value * ( 1 + 0.33), 0)
+    set_border(hoja_modulos_elasticos,"N",12)  
     if round(( (hoja_modulos_elasticos["M12"].value / a) ** b ) * efic ,0) < 80:
         hoja_modulos_elasticos["K12"].value = round(( (hoja_modulos_elasticos["M12"].value / a) ** b ) * efic ,0)
     else:
         hoja_modulos_elasticos["K12"].value = "RECHAZO"
+    set_border(hoja_modulos_elasticos,"K",12)   
 
     #Calcula el Vs
     results = []
@@ -540,16 +535,63 @@ def modificar_modulos_elasticos(libro,key):
 
         if hoja_modulos_elasticos[f"I{fila}"].value < 30:
 
-            if fila == 13:
+            if fila == 12:
                 results.append( round (hoja_modulos_elasticos[f"I{fila}"].value / hoja_modulos_elasticos[f"J{fila}"].value,4))
             else:
                 results.append( round ( (hoja_modulos_elasticos[f"I{fila}"].value - hoja_modulos_elasticos[f"I{fila - 1}"].value)/ hoja_modulos_elasticos[f"J{fila}"].value,4))
-        
         else:
             results.append( round ( (30 - hoja_modulos_elasticos[f"I{fila - 1}"].value)/ hoja_modulos_elasticos[f"J{fila}"].value,4))
+            break
 
+    #Tipo de suelo
+    Vs_30 = round(30 / sum(results),0)
+    if Vs_30 > 1500:
+        tipo_suelo = "A"
+    elif Vs_30 > 760 and Vs_30<= 1500:
+        tipo_suelo = "B"
+    elif Vs_30 > 360 and Vs_30<= 760:
+        tipo_suelo = "C"
+    elif Vs_30 > 180 and Vs_30<= 360:
+        tipo_suelo = "D"
+    else:
+        "E/F"
 
-    hoja_modulos_elasticos["L30"].value = round(30 / sum(results),0)
+    #Escribe el rotulo de Vs y el tipo de suelo
+    hoja_modulos_elasticos[f"K{ultima_fila + 3}"].value = "Vs30 (m/s)"
+    hoja_modulos_elasticos[f"K{ultima_fila + 3}"].font.bold = True
+    hoja_modulos_elasticos.range(f"K{ultima_fila + 3}").characters[2:5].api.Font.Subscript = True
+    hoja_modulos_elasticos[f"L{ultima_fila + 3}"].value = Vs_30
+    set_border(hoja_modulos_elasticos,"K",ultima_fila + 3)
+    set_border(hoja_modulos_elasticos,"L",ultima_fila + 3)   
+
+    hoja_modulos_elasticos[f"K{ultima_fila + 4}"].value = "Tipo de suelo"
+    hoja_modulos_elasticos[f"K{ultima_fila + 4}"].font.bold = True
+    hoja_modulos_elasticos[f"L{ultima_fila + 4}"].value = tipo_suelo
+    hoja_modulos_elasticos.range(f"L{ultima_fila + 4}").api.HorizontalAlignment = xw.constants.HAlign.xlHAlignLeft
+    set_border(hoja_modulos_elasticos,"K",ultima_fila + 4)
+    set_border(hoja_modulos_elasticos,"L",ultima_fila + 4)   
+
+    #Modifica el eje Y de la figur y el eje X se las series
+    chart = hoja_modulos_elasticos.charts[0] 
+
+    # Actualizar la serie de datos de la gráfica
+    num_series = chart.api[1].SeriesCollection().Count  
+    for i in range(1, num_series + 1):  
+        serie = chart.api[1].SeriesCollection(i)
+
+        if "PERFIL PROMEDIO" not in serie.Name:
+            columna_y = chr(65 + (i - 1) * 2) 
+            columna_x = chr(66 + (i - 1) * 2)  
+        else:
+            columna_y = "I"
+            columna_x = "J"
+
+        serie.XValues = hoja_modulos_elasticos.range(f"{columna_x}12:{columna_x}{ultima_fila}").value
+        serie.Values = hoja_modulos_elasticos.range(f"{columna_y}12:{columna_y}{ultima_fila}").value
+
+    #Max del eje Y
+    chart.api[1].Axes(2).MaximumScale = round(hoja_modulos_elasticos[f"A{ultima_fila}"].value,0)
+    chart.api[1].Axes(2).MinimumScale = 0
 
 def modificar_hoja_fotos(libro,key,inputs_path):
 
@@ -592,14 +634,14 @@ def modificar_hoja_fotos(libro,key,inputs_path):
 def save_to_pdf(libro, key, documents_path ):
 
     #hojas
-    sheet_names = ["Vs","Módulos elásticos", "Espectro G01", "Espectro G12", "Espectro G24", "Inversión Linea G01","Inversión Linea G12","Inversión Linea G24","Fotos Linea"]
+    sheet_names = ["Módulos elásticos", "Espectro G01", "Inversión Linea G01","Fotos Linea"]
     for sheet_name in sheet_names:
 
         #Obtiene la hoja
         hoja = libro.sheets[sheet_name]
 
         #Guarda el pdf
-        output_pdf_path = f'{documents_path}//GEOSTREAM//MASW//{key}//{sheet_name}.pdf'
+        output_pdf_path = f'{documents_path}//GEOSTREAM//SPAC//{key}//{sheet_name}.pdf'
 
         hoja.api.ExportAsFixedFormat(
             Type=0,  # 0 es para PDF
@@ -613,12 +655,12 @@ def save_to_pdf(libro, key, documents_path ):
     #Compila en uno solo
     merger = PyPDF2.PdfMerger()
     for pdf in sheet_names:
-        merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
+        merger.append(f'{documents_path}//GEOSTREAM//SPAC//{key}//{pdf}.pdf')
 
     # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
+    merger.write(f'{documents_path}//GEOSTREAM//SPAC//{key}//{key}_combinado.pdf')
     merger.close()
 
     for pdf in sheet_names:
-        os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
+        os.remove(f'{documents_path}//GEOSTREAM//SPAC//{key}//{pdf}.pdf')
 

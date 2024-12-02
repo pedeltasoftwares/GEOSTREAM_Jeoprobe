@@ -636,6 +636,7 @@ def modificar_modulos_elasticos(libro,key):
 
     #Max del eje Y
     chart.api[1].Axes(2).MaximumScale = round(hoja_modulos_elasticos[f"A{ultima_fila}"].value,0)
+    chart.api[1].Axes(2).MinimumScale = 0
 
 def modificar_hoja_fotos(libro,key,inputs_path):
 
