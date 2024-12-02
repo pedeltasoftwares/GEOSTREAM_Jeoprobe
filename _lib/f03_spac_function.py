@@ -1,5 +1,5 @@
 """
-VENTANA PARA LA FUNCIÓN MASW
+VENTANA PARA LA FUNCIÓN SPAC
 """
 from customtkinter import * 
 import tkinter.messagebox
@@ -13,9 +13,8 @@ import time
 import math
 import PyPDF2
 from _lib.progress_window import create_progress_window
-from _lib.set_cell_border import set_border
 
-def open_masw_window(menu_window,images_path):
+def open_spac_window(menu_window,images_path):
 
     # Crear una nueva ventana
     window = CTkToplevel(menu_window)
@@ -28,9 +27,9 @@ def open_masw_window(menu_window,images_path):
     y = (screen_height - height) // 2
     window.geometry(f'{width}x{height}+{x}+{y}')
     # Nombre de la ventana
-    window.title("MASW")
+    window.title("SPAC")
     # Ícono ventana
-    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "masw.ico")))
+    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "SPAC.ico")))
     # Resizable
     window.resizable(False, False)
     window.grab_set()  # Esto hace que la ventana sea modal
@@ -142,7 +141,7 @@ def open_masw_window(menu_window,images_path):
             return
 
         #Archivos necesarios para completar la verificación
-        verify_files = ['Espectro 01.png', 'Espectro 02.png', 'Espectro 03.png', 'G01.fv', 'G12.fv', 'G24.fv', 'Inversion 01.png', 'Inversion 02.png', 'Inversion 03.png', 'FIN.jpg', 'INI.jpg', 'Model.png']
+        verify_files = ['espectro.png', 'SPAC.fv', 'inversión.png', 'FIN.jpg', 'INI.jpg']
 
         #Verifica que se haya insertado el input
         if file_content["cliente"] != "" and file_content["proyecto"] != "" and file_content["OS"] != "":
@@ -227,16 +226,16 @@ def open_masw_window(menu_window,images_path):
         text="Generar reportes",
         width=100,
         height=30,
-        command= lambda: masw_module(file_content,directory_entry.get()) 
+        command= lambda: spac_module(file_content,directory_entry.get()) 
     )
     run_button.place(x=(width - 100) // 2, y=140)
     
 
 
 """
-EJECUTA EL MÓDULO DE MASW
+EJECUTA EL MÓDULO DE SPAC
 """
-def masw_module(file_content,inputs_path):
+def spac_module(file_content,inputs_path):
 
     #Cierra todos los procesos de excel abiertos
     kill_excel_processes()
@@ -259,7 +258,7 @@ def masw_module(file_content,inputs_path):
     documents_path = os.path.expanduser("~\\Documents")
 
     # Crea la carpeta para almacenar
-    results_path = f'{documents_path}//GEOSTREAM//MASW'
+    results_path = f'{documents_path}//GEOSTREAM//SPAC'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     else:
@@ -272,7 +271,7 @@ def masw_module(file_content,inputs_path):
                 os.remove(ruta_elemento)
 
     #Crea la ventana de progreso
-    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("MASW - Generando memorias","logo.ico",f"0/{len(list(file_content.keys()))-3}")
+    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("SPAC - Generando memorias","logo.ico",f"0/{len(list(file_content.keys()))-3}")
 
     #Itera por los archivos
     cont = 1
@@ -280,28 +279,25 @@ def masw_module(file_content,inputs_path):
         if key != "cliente" and key != "proyecto" and key != "OS":
 
             #Copia el template
-            os.mkdir(f'{documents_path}//GEOSTREAM//MASW//{key}')
-            shutil.copy(f'{templates_path}//template lineas.xlsm', f'{documents_path}///GEOSTREAM//MASW//{key}//template lineas.xlsm')
+            os.mkdir(f'{documents_path}//GEOSTREAM//SPAC//{key}')
+            shutil.copy(f'{templates_path}//template spac.xlsm', f'{documents_path}///GEOSTREAM//SPAC//{key}//template spac.xlsm')
 
             #Abre el template
             app = xw.App(visible=False)  
             app.display_alerts = False 
             app.screen_updating = False
-            libro = xw.Book(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsm', update_links=True)
+            libro = xw.Book(f'{documents_path}//GEOSTREAM//SPAC//{key}//template spac.xlsm', update_links=True)
 
             #Modifica hoja A1
             modificar_hoja_A1(libro,file_content,key)
 
-            #Modificar hoja A2 a la A4
-            modificar_hoja_A2_A3_A4(libro,key,inputs_path)
-
-            #Modificar hoja VS
-            modificar_hoja_Vs(libro,key,inputs_path)
+            #Modificar hoja A2
+            modificar_hoja_A2(libro,key,inputs_path)
 
             #Modifica la hoja de modulos elastivos
             modificar_modulos_elasticos(libro,key)
 
-            #Modificar hoja fotos: Espectro G01, Espectro G12, Espectro G24, Inversión Linea G01, Inversión Linea G12, Inversión Linea G24, Fotos Linea
+            #Modificar hoja fotos: Espectro G01, Inversión Linea G01, Fotos Linea
             modificar_hoja_fotos(libro,key,inputs_path)
 
             #Imprimir en PDF la memoria
@@ -353,134 +349,97 @@ def modificar_hoja_A1(libro,file_content,key):
     hoja["E10"].value = longitud_end
     hoja["F10"].value = latitud_end
 
-def modificar_hoja_A2_A3_A4(libro,key,inputs_path):
+def modificar_hoja_A2(libro,key,inputs_path):
 
-    for name in ["A2","A3","A4"]:
+    #selecciona la hoja
+    hoja = libro.sheets["A2"]
 
-        #selecciona la hoja
-        hoja = libro.sheets[name]
-
-        #Elimina las filas existentes
-        rango = hoja.range('A6:G25')
-        rango.value = None
+    #Elimina las filas existentes
+    rango = hoja.range('A6:G50')
+    rango.value = None
         
-        #abre los el archivo .fv y los lee
-        name_file = 'G01.fv' if name == 'A2' else ('G12.fv' if name == 'A3' else 'G24.fv')
-        with open(f'{inputs_path}//{key}//{name_file}','r') as f:
-            lines = f.readlines()
-        index = []
-        for line in lines:
-            if "MODEL_INVERTED: " in line:
-                index.append(lines.index(line))
-            
-            if "MISFIT_RMS_NRMS: " in line:
-                index.append(lines.index(line))
+    #abre los el archivo .fv y los lee
+    name_file = 'SPAC.fv'
+    with open(f'{inputs_path}//{key}//{name_file}','r') as f:
+        lines = f.readlines()
+    index = []
+    for line in lines:
+        if "MODEL_INVERTED: " in line:
+            index.append(lines.index(line))
+        
+        if "MISFIT_RMS_NRMS: " in line:
+            index.append(lines.index(line))
 
-        #Toma los valores
-        col_1, col_2 = [],[]
-        for i in range(index[0]+1, index[1]):
-            col_1.append(float(lines[i].split("\n")[0].split(" ")[0]))
-            col_2.append(float(lines[i].split("\n")[0].split(" ")[2]))
+    #Toma los valores
+    col_1, col_2 = [],[]
+    for i in range(index[0]+1, index[1]):
+        col_1.append(float(lines[i].split("\n")[0].split(" ")[0]))
+        col_2.append(float(lines[i].split("\n")[0].split(" ")[2]))
+    
+    #copia los nuevos valores
+    fila = 6
+    for i in range(len(col_1)):
+        #Espesor
+        hoja[f"A{fila}"].value = col_1[i]
+        #Vs
+        hoja[f"B{fila}"].value = col_2[i]
+        #profundidad
+        if i != 0:
+            hoja[f"C{fila}"].value = hoja[f"C{fila-1}"].value + col_1[i]
+        else:
+            hoja[f"C{fila}"].value = col_1[i]
+        
+        fila+=1
 
-        #copia los nuevos valores
-        fila = 6
-        for i in range(len(col_1)):
-            #Espesor
-            hoja[f"A{fila}"].value = col_1[i]
-            #Vs
-            hoja[f"B{fila}"].value = col_2[i]
-            #profundidad
-            if i != 0:
-                hoja[f"C{fila}"].value = hoja[f"C{fila-1}"].value + col_1[i]
-            else:
-                hoja[f"C{fila}"].value = col_1[i]
-            
-            fila+=1
-            
-        #Modelos VS
-        hoja["D5"].value = 0
-        hoja["E5"].value = hoja["B5"].value
-        fila = 6
-        for i in range(len(col_1)):
+    #Modelos VS
+    hoja["D5"].value = 0
+    hoja["E5"].value = hoja["B5"].value
+    fila = 6
+    for i in range(len(col_1)):
        
-            hoja[f"D{fila}"].value = hoja[f"C{i+6}"].value
-            hoja[f"E{fila}"].value = hoja[f"B{i+6}"].value
+        hoja[f"D{fila}"].value = hoja[f"C{i+6}"].value
+        hoja[f"E{fila}"].value = hoja[f"B{i+6}"].value
 
-            hoja[f"D{fila+1}"].value = hoja[f"C{i+6}"].value
-            hoja[f"E{fila+1}"].value = hoja[f"B{i+7}"].value
+        hoja[f"D{fila+1}"].value = hoja[f"C{i+6}"].value
+        hoja[f"E{fila+1}"].value = hoja[f"B{i+7}"].value
 
-            #Poisson
-            nu_1 = 1.8945 * hoja[f"E{fila}"].value ** (-0.325)
-            if nu_1 > 0.495:
-                hoja[f"F{fila}"].value =  0.495
+        #Poisson
+        nu_1 = 1.8945 * hoja[f"E{fila}"].value ** (-0.325)
+        if nu_1 > 0.495:
+            hoja[f"F{fila}"].value =  0.495
+        else:
+            hoja[f"F{fila}"].value = nu_1
+
+        try:
+            nu_2 = 1.8945 * hoja[f"E{fila + 1}"].value ** (-0.325)
+            if nu_2 > 0.495:
+                hoja[f"F{fila + 1}"].value =  0.495
             else:
-                hoja[f"F{fila}"].value = nu_1
-
-            try:
-                nu_2 = 1.8945 * hoja[f"E{fila + 1}"].value ** (-0.325)
-                if nu_2 > 0.495:
-                    hoja[f"F{fila + 1}"].value =  0.495
-                else:
-                    hoja[f"F{fila + 1}"].value = nu_2
-            except:
-                pass
-            
-            hoja[f"G{fila}"].value = ( ( ( 2 - 2 * hoja[f"F{fila}"].value ) / ( 1 - 2 * hoja[f"F{fila}"].value ) ) ** (0.5) ) * hoja[f"E{fila}"].value
-
-            try:
-                hoja[f"G{fila + 1}"].value = ( ( ( 2 - 2 * hoja[f"F{fila + 1}"].value ) / ( 1 - 2 * hoja[f"F{fila + 1}"].value ) ) ** (0.5) ) * hoja[f"E{fila + 1}"].value
-            except:
-                pass
-            
-            if i == len(col_1) - 1:
-                hoja[f"D{fila+1}"].value = None
-
-            fila+=2
-
-        hoja["F5"].value = hoja["F6"].value
-        hoja["G5"].value = hoja["G6"].value
+                hoja[f"F{fila + 1}"].value = nu_2
+        except:
+            pass
         
-def modificar_hoja_Vs(libro,key,inputs_path):
+        hoja[f"G{fila}"].value = ( ( ( 2 - 2 * hoja[f"F{fila}"].value ) / ( 1 - 2 * hoja[f"F{fila}"].value ) ) ** (0.5) ) * hoja[f"E{fila}"].value
 
-    #Obtiene la hoja
-    hoja_Vs = libro.sheets["Vs"]
-
-    #Parsea el input_path
-    inputs_path = inputs_path.replace("/", "\\")
-
-    hoja_Vs.pictures.add(f"{inputs_path}\{key}\Model.png",
-                        left = hoja_Vs.range("C26").left,
-                        top = hoja_Vs.range("C26").top,
-                        width = '400')
-    
-    #Modifica las figuras
-    num_figuras = len(hoja_Vs.charts)
-    for i in range(num_figuras):
-        #Selecciona el gráfico
-        chart = hoja_Vs.charts[i] 
-        #Selecciona la serie
-        serie = chart.api[1].SeriesCollection(1)
-        #Hoja para los datos
-        hoja_name = "A2" if i == 0 else ("A3" if i == 1 else "A4")
-        hoja_temp = libro.sheets[hoja_name]
-        #Calcula la última fila 
-        ultima_fila = hoja_temp.api.UsedRange.Rows.Count 
-        for fila in range(5, ultima_fila + 1):
-            celda = hoja_temp[f'D{fila}']
-            if celda.value:  # Verifica si la celda tiene contenido
-                ultima_fila = fila
-
-        serie.XValues = hoja_temp.range(f"E5:E{ultima_fila}").value
-        serie.Values = hoja_temp.range(f"D5:D{ultima_fila}").value
+        try:
+            hoja[f"G{fila + 1}"].value = ( ( ( 2 - 2 * hoja[f"F{fila + 1}"].value ) / ( 1 - 2 * hoja[f"F{fila + 1}"].value ) ) ** (0.5) ) * hoja[f"E{fila + 1}"].value
+        except:
+            pass
         
-        chart.api[1].Axes(2).MaximumScale = round(hoja_temp[f"D{ultima_fila}"].value,0)
-    
+        if i == len(col_1) - 1:
+            hoja[f"D{fila+1}"].value = None
+
+        fila+=2
+
+    hoja["F5"].value = hoja["F6"].value
+    hoja["G5"].value = hoja["G6"].value
+
 def modificar_modulos_elasticos(libro,key):
 
     #Obtiene la hoja de módulos elasticops
     hoja_modulos_elasticos = libro.sheets["Módulos elásticos"]
 
-    rango = hoja_modulos_elasticos.range('A11:N28')
+    rango = hoja_modulos_elasticos.range('A12:N28')
     rango.value = None
 
     #Parámetros
@@ -488,175 +447,127 @@ def modificar_modulos_elasticos(libro,key):
     b = 1.960784314
     efic = 1
 
-    #Obtiene la hoja de A2, A3, y A4
-    for sheet_name in ["A2","A3","A4"]:
+    #Obtiene la hoja de A2
+    hoja=libro.sheets["A2"]
 
-        #Hoja
-        hoja=libro.sheets[sheet_name]
+    #Última fila con información
+    ultima_fila = hoja.api.UsedRange.Rows.Count 
+    for fila in range(5, ultima_fila + 1):
+        celda = hoja[f'D{fila}']
+        if celda.value:  # Verifica si la celda tiene contenido
+            ultima_fila = fila
 
-        #Última fila con información
-        ultima_fila = hoja.api.UsedRange.Rows.Count 
-        for fila in range(5, ultima_fila + 1):
-            celda = hoja[f'D{fila}']
-            if celda.value:  # Verifica si la celda tiene contenido
-                ultima_fila = fila
-
-        #Columna para copiar el Vs en la hoja de modulos elasticos
-        col_prof = "A" if sheet_name == "A2" else ("C" if sheet_name == "A3" else "E")
-        col_Vs = "B" if sheet_name == "A2" else ("D" if sheet_name == "A3" else "F")
-        #Copia la información
-        for fila in range(5,ultima_fila+1):
-            #profundidad
-            hoja_modulos_elasticos[f'{col_prof}{fila+6}'].value = hoja[f"D{fila}"].value
-            #Vs
-            hoja_modulos_elasticos[f'{col_Vs}{fila+6}'].value = hoja[f"E{fila}"].value
+    #Columna para copiar el Vs en la hoja de modulos elasticos
+    col_prof = "A" 
+    col_Vs = "B" 
+    #Copia la información
+    for fila in range(5,ultima_fila+1):
+        #profundidad
+        hoja_modulos_elasticos[f'{col_prof}{fila+7}'].value = hoja[f"D{fila}"].value
+        #Vs
+        hoja_modulos_elasticos[f'{col_Vs}{fila+7}'].value = hoja[f"E{fila}"].value
 
     #Modifica la tabla del perfil promedio
     ultima_fila = hoja_modulos_elasticos.api.UsedRange.Rows.Count 
-    for fila in range(11, ultima_fila + 1):
+    for fila in range(12, ultima_fila + 1):
         celda = hoja_modulos_elasticos[f'A{fila}']
         if celda.value:  # Verifica si la celda tiene contenido
             ultima_fila = fila
 
-    for fila in range(11,ultima_fila+1):
+    for fila in range(12,ultima_fila+1):
 
         #Promedio de profundidad
-        hoja_modulos_elasticos[f"I{fila}"].value = round( ( hoja_modulos_elasticos[f"A{fila}"].value + 
-                                                         hoja_modulos_elasticos[f"C{fila}"].value +
-                                                         hoja_modulos_elasticos[f"E{fila}"].value ) / 3, 1)
-        
-        set_border(hoja_modulos_elasticos,"I",fila)
+        hoja_modulos_elasticos[f"I{fila}"].value = round(  hoja_modulos_elasticos[f"A{fila}"].value, 1)
+        hoja_modulos_elasticos.range(f"I{fila}").api.HorizontalAlignment = -4108
 
+        #borde
+        for border_id in range(1, 5):
+            hoja_modulos_elasticos.range(f"I{fila}").api.Borders(border_id).LineStyle = 1  
+    
         #Promedio de vs
-        hoja_modulos_elasticos[f"J{fila}"].value = round( ( hoja_modulos_elasticos[f"B{fila}"].value + 
-                                                         hoja_modulos_elasticos[f"D{fila}"].value +
-                                                         hoja_modulos_elasticos[f"F{fila}"].value ) / 3, 1)
+        hoja_modulos_elasticos[f"J{fila}"].value = round( hoja_modulos_elasticos[f"B{fila}"].value, 1) 
+        hoja_modulos_elasticos.range(f"J{fila}").api.HorizontalAlignment = -4108
+        for border_id in range(1, 5):
+            hoja_modulos_elasticos.range(f"J{fila}").api.Borders(border_id).LineStyle = 1  
         
-        set_border(hoja_modulos_elasticos,"J",fila)
-
-        if fila != 11:
+        if fila != 12:
             #Gamma saturado
             hoja_modulos_elasticos[f"L{fila}"].value = round( 8.32 * math.log10( hoja_modulos_elasticos[f"J{fila}"].value )  - 
                                                                 1.61 * math.log10(hoja_modulos_elasticos[f"I{fila}"].value ), 1)
+            hoja_modulos_elasticos.range(f"L{fila}").api.HorizontalAlignment = -4108
+            for border_id in range(1, 5):
+                hoja_modulos_elasticos.range(f"L{fila}").api.Borders(border_id).LineStyle = 1  
             
-            set_border(hoja_modulos_elasticos,"L",fila)
-
             #Go
             hoja_modulos_elasticos[f"M{fila}"].value = round(  (hoja_modulos_elasticos[f"L{fila}"].value / 10) * hoja_modulos_elasticos[f"J{fila}"].value  ** 2, 0)
-
-            set_border(hoja_modulos_elasticos,"M",fila)
+            hoja_modulos_elasticos.range(f"M{fila}").api.HorizontalAlignment = -4108
+            for border_id in range(1, 5):
+                hoja_modulos_elasticos.range(f"M{fila}").api.Borders(border_id).LineStyle = 1 
 
             #Eo
             hoja_modulos_elasticos[f"N{fila}"].value = round( 2 * hoja_modulos_elasticos[f"M{fila}"].value * ( 1 + 0.33), 0)
-
-            set_border(hoja_modulos_elasticos,"N",fila)
+            hoja_modulos_elasticos.range(f"N{fila}").api.HorizontalAlignment = -4108
+            for border_id in range(1, 5):
+                hoja_modulos_elasticos.range(f"N{fila}").api.Borders(border_id).LineStyle = 1 
 
             #Nequiv
             if round(( (hoja_modulos_elasticos[f"M{fila}"].value / a) ** b ) * efic ,0) < 80:
-                
+
                 hoja_modulos_elasticos[f"K{fila}"].value = round(( (hoja_modulos_elasticos[f"M{fila}"].value / a) ** b ) * efic ,0)
-                set_border(hoja_modulos_elasticos,"K",fila)
-            
+                hoja_modulos_elasticos.range(f"K{fila}").api.HorizontalAlignment = -4108
+                for border_id in range(1, 5):
+                    hoja_modulos_elasticos.range(f"K{fila}").api.Borders(border_id).LineStyle = 1 
+
             else:
                 hoja_modulos_elasticos[f"K{fila}"].value = "RECHAZO"
-                set_border(hoja_modulos_elasticos,"K",fila)
- 
+                hoja_modulos_elasticos.range(f"K{fila}").api.HorizontalAlignment = -4108
+                for border_id in range(1, 5):
+                    hoja_modulos_elasticos.range(f"K{fila}").api.Borders(border_id).LineStyle = 1 
+
+        
     #Completa la primera linea
-    hoja_modulos_elasticos["L11"].value = hoja_modulos_elasticos["L12"].value 
-    hoja_modulos_elasticos["M11"].value = round(  (hoja_modulos_elasticos["L11"].value / 10) * hoja_modulos_elasticos["J11"].value  ** 2, 0)
-    set_border(hoja_modulos_elasticos,"M",11)   
-    hoja_modulos_elasticos["N11"].value = round( 2 * hoja_modulos_elasticos["M11"].value * ( 1 + 0.33), 0)
-    set_border(hoja_modulos_elasticos,"N",11)   
-    if round(( (hoja_modulos_elasticos["M11"].value / a) ** b ) * efic ,0) < 80:
-        hoja_modulos_elasticos["K11"].value = round(( (hoja_modulos_elasticos["M11"].value / a) ** b ) * efic ,0)    
+    hoja_modulos_elasticos["L12"].value = hoja_modulos_elasticos["L13"].value 
+    hoja_modulos_elasticos["M12"].value = round(  (hoja_modulos_elasticos["L12"].value / 10) * hoja_modulos_elasticos["J12"].value  ** 2, 0)
+    hoja_modulos_elasticos["N12"].value = round( 2 * hoja_modulos_elasticos["M12"].value * ( 1 + 0.33), 0)
+    if round(( (hoja_modulos_elasticos["M12"].value / a) ** b ) * efic ,0) < 80:
+        hoja_modulos_elasticos["K12"].value = round(( (hoja_modulos_elasticos["M12"].value / a) ** b ) * efic ,0)
     else:
-        hoja_modulos_elasticos["K11"].value = "RECHAZO"
-    set_border(hoja_modulos_elasticos,"K",11)   
+        hoja_modulos_elasticos["K12"].value = "RECHAZO"
 
     #Calcula el Vs
     results = []
-    for fila in range(12, ultima_fila + 1,2):
+    for fila in range(13, ultima_fila + 1,2):
 
         if hoja_modulos_elasticos[f"I{fila}"].value < 30:
 
-            if fila == 12:
+            if fila == 13:
                 results.append( round (hoja_modulos_elasticos[f"I{fila}"].value / hoja_modulos_elasticos[f"J{fila}"].value,4))
             else:
                 results.append( round ( (hoja_modulos_elasticos[f"I{fila}"].value - hoja_modulos_elasticos[f"I{fila - 1}"].value)/ hoja_modulos_elasticos[f"J{fila}"].value,4))
         
         else:
             results.append( round ( (30 - hoja_modulos_elasticos[f"I{fila - 1}"].value)/ hoja_modulos_elasticos[f"J{fila}"].value,4))
-            break
 
-    #Tipo de suelo
-    Vs_30 = round(30 / sum(results),0)
-    if Vs_30 > 1500:
-        tipo_suelo = "A"
-    elif Vs_30 > 760 and Vs_30<= 1500:
-        tipo_suelo = "B"
-    elif Vs_30 > 360 and Vs_30<= 760:
-        tipo_suelo = "C"
-    elif Vs_30 > 180 and Vs_30<= 360:
-        tipo_suelo = "D"
-    else:
-        "E/F"
 
-    #Escribe el rotulo de Vs y el tipo de suelo
-    hoja_modulos_elasticos[f"K{ultima_fila + 3}"].value = "Vs30 (m/s)"
-    hoja_modulos_elasticos[f"K{ultima_fila + 3}"].font.bold = True
-    hoja_modulos_elasticos.range(f"K{ultima_fila + 3}").characters[2:5].api.Font.Subscript = True
-    hoja_modulos_elasticos[f"L{ultima_fila + 3}"].value = Vs_30
-    set_border(hoja_modulos_elasticos,"K",ultima_fila + 3)
-    set_border(hoja_modulos_elasticos,"L",ultima_fila + 3)   
-
-    hoja_modulos_elasticos[f"K{ultima_fila + 4}"].value = "Tipo de suelo"
-    hoja_modulos_elasticos[f"K{ultima_fila + 4}"].font.bold = True
-    hoja_modulos_elasticos[f"L{ultima_fila + 4}"].value = tipo_suelo
-    hoja_modulos_elasticos.range(f"L{ultima_fila + 4}").api.HorizontalAlignment = xw.constants.HAlign.xlHAlignLeft
-    set_border(hoja_modulos_elasticos,"K",ultima_fila + 4)
-    set_border(hoja_modulos_elasticos,"L",ultima_fila + 4)   
-
-    #Modifica el eje Y de la figur y el eje X se las series
-    chart = hoja_modulos_elasticos.charts[0] 
-
-    # Actualizar la serie de datos de la gráfica
-    num_series = chart.api[1].SeriesCollection().Count  
-    for i in range(1, num_series + 1):  
-        serie = chart.api[1].SeriesCollection(i)
-
-        if "PERFIL PROMEDIO" not in serie.Name:
-            columna_y = chr(65 + (i - 1) * 2) 
-            columna_x = chr(66 + (i - 1) * 2)  
-        else:
-            columna_y = "I"
-            columna_x = "J"
-
-        serie.XValues = hoja_modulos_elasticos.range(f"{columna_x}11:{columna_x}{ultima_fila}").value
-        serie.Values = hoja_modulos_elasticos.range(f"{columna_y}11:{columna_y}{ultima_fila}").value
-
-    #Max del eje Y
-    chart.api[1].Axes(2).MaximumScale = round(hoja_modulos_elasticos[f"A{ultima_fila}"].value,0)
+    hoja_modulos_elasticos["L30"].value = round(30 / sum(results),0)
 
 def modificar_hoja_fotos(libro,key,inputs_path):
 
     #Parsea el input_path
     inputs_path = inputs_path.replace("/", "\\")
 
-    for sheet_name in ["Espectro G01","Espectro G12","Espectro G24","Inversión Linea G01","Inversión Linea G12","Inversión Linea G24"]:
+    for sheet_name in ["Espectro G01","Inversión Linea G01"]:
 
         #Obtiene la hoja
         hoja = libro.sheets[sheet_name]
 
-        #Obtiene las formas
-        shapes = hoja.api.Shapes
-
         if "Espectro G" in sheet_name:
-            img_name = "Espectro 01.png" if "01" in sheet_name else ("Espectro 02.png" if "G12" in sheet_name else "Espectro 03.png")
+            img_name = "espectro.png"
             range_insert = "A10"
             width = "730"
         
         elif "Inversión Linea G" in sheet_name:
-            img_name = "Inversion 01.png" if "01" in sheet_name else ("Inversion 02.png" if "G12" in sheet_name else "Inversion 03.png")
+            img_name = "inversión.png"
             range_insert = "A10"
             width = "730"
     

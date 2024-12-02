@@ -1,5 +1,5 @@
 """
-VENTANA PARA LA FUNCIÓN MASW
+VENTANA PARA LA FUNCIÓN TER
 """
 from customtkinter import * 
 import tkinter.messagebox

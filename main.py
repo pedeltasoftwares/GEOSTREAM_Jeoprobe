@@ -9,6 +9,7 @@ from _lib.get_files_path import get_file_paths
 from PIL import Image, ImageTk
 from _lib.f01_masw_function import open_masw_window
 from _lib.f02_ter_function import open_ter_window
+from _lib.f03_spac_function import open_spac_window
 
 #Paths
 images_path = get_file_paths("_images")
@@ -21,6 +22,9 @@ if verificar_mac_y_ejecutar_programa():
 
     def ejecutar_ter():
         open_ter_window(menu_window,images_path)
+    
+    def ejecutar_spac():
+        open_spac_window(menu_window,images_path)
 
     #Inicializa la ventana
     menu_window = CTk()
@@ -59,6 +63,26 @@ if verificar_mac_y_ejecutar_programa():
                     border_color="#606060",
                     command=ejecutar_masw)
     masw.place(x=60, y=25)
+    #Botón SPAC
+    spac_image = Image.open(os.path.join(images_path, "spac.png"))
+    spac_image = spac_image.resize((40, 30), Image.LANCZOS)
+    spac_image_tk = ImageTk.PhotoImage(spac_image)
+    ter = CTkButton(master=menu_window, 
+                    text="SPAC", 
+                    image = spac_image_tk,
+                    width=180, 
+                    height=40, 
+                    compound="left",
+                    font=('Gothic A1',15),
+                    fg_color="#3A3A3A",
+                    hover_color="#4C4C4C",
+                    text_color="#E0E0E0",
+                    corner_radius=5,
+                    border_width=2,
+                    border_color="#606060",
+                    command=ejecutar_spac)
+    ter.place(x=60, y=80)
+
     #Botón TER
     ter_image = Image.open(os.path.join(images_path, "ter.png"))
     ter_image = ter_image.resize((30, 30), Image.LANCZOS)
@@ -77,6 +101,6 @@ if verificar_mac_y_ejecutar_programa():
                     border_width=2,
                     border_color="#606060",
                     command=ejecutar_ter)
-    ter.place(x=60, y=80)
+    ter.place(x=60, y=135)
     #Ejecuta la ventana
     menu_window.mainloop()
