@@ -232,13 +232,6 @@ EJECUTA EL MÓDULO DE TER
 """
 def ter_module(file_content,inputs_path):
 
-    #Cierra todos los procesos de excel abiertos
-    kill_excel_processes()
-    time.sleep(2)
-
-    #Templates path
-    templates_path = get_file_paths("_templates")
-
     #Verifica que se haya seleccionado la ruta de los archivos de entrada
     if inputs_path == "":
         tkinter.messagebox.showerror("Error", "Favor seleccionar la ruta de los archivos de entrada.")
@@ -248,7 +241,14 @@ def ter_module(file_content,inputs_path):
     if file_content["cliente"] == "" or file_content["proyecto"] == "" or file_content["OS"] == "":
         tkinter.messagebox.showerror("Error", "Favor cargar archivo de entrada.")
         return
-    
+
+    #Cierra todos los procesos de excel abiertos
+    kill_excel_processes()
+    time.sleep(2)
+
+    #Templates path
+    templates_path = get_file_paths("_templates")
+
     #Ruta de documentos
     documents_path = os.path.expanduser("~\\Documents")
 

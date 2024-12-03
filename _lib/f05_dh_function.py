@@ -1,5 +1,5 @@
 """
-VENTANA PARA LA FUNCIÓN MASW
+VENTANA PARA LA FUNCIÓN DH
 """
 from customtkinter import * 
 import tkinter.messagebox
@@ -15,7 +15,7 @@ import PyPDF2
 from _lib.progress_window import create_progress_window
 from _lib.set_cell_border import set_border
 
-def open_masw_window(menu_window,images_path):
+def open_dh_window(menu_window,images_path):
 
     # Crear una nueva ventana
     window = CTkToplevel(menu_window)
@@ -28,9 +28,9 @@ def open_masw_window(menu_window,images_path):
     y = (screen_height - height) // 2
     window.geometry(f'{width}x{height}+{x}+{y}')
     # Nombre de la ventana
-    window.title("MASW")
+    window.title("DH")
     # Ícono ventana
-    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "masw.ico")))
+    window.after(201, lambda: window.iconbitmap(os.path.join(images_path, "dh.ico")))
     # Resizable
     window.resizable(False, False)
     window.grab_set()  # Esto hace que la ventana sea modal
@@ -40,7 +40,14 @@ def open_masw_window(menu_window,images_path):
     #Variables para almacenar archivos
     file_content = {"cliente":"",
                     "proyecto": "",
-                    "OS": ""
+                    "orden_servicio": "",
+                    "fecha_medicion": "",
+                    "operador": "",
+                    "interpreto": "",
+                    "prof_ensayo": "",
+                    "dist_horizontal_fuente_sondeo": "",
+                    "nombre_ensayo": "",
+                    "smooth":""
                     }
     input_path = ""
 
@@ -69,63 +76,39 @@ def open_masw_window(menu_window,images_path):
             workbook = openpyxl.load_workbook(file_path)
             sheet = workbook.active
             #Verifica que exista la información del proyecto, cliente y OS
-            if sheet['B1'].value != None and sheet['B2'].value != None and sheet['B3'].value != None:
-                file_content["OS"] = sheet['B1'].value
-                file_content["cliente"] = sheet['B3'].value
-                file_content["proyecto"] = sheet['B2'].value
+            if sheet['B1'].value != None and sheet['B2'].value != None and sheet['B3'].value != None and sheet['B4'].value != None and sheet['B5'].value != None and sheet['B6'].value != None and sheet['B7'].value != None and sheet['B8'].value != None and sheet['B9'].value != None and sheet['10'].value != None:
+                
+                file_content["proyecto"] = sheet['B1'].value
+                file_content["cliente"] = sheet['B2'].value
+                file_content["orden_servicio"] = sheet['B3'].value
+                file_content["fecha_medicion"] = sheet['B4'].value
+                file_content["operador"] = sheet['B5'].value
+                file_content["interpreto"] = sheet['B6'].value
+                file_content["prof_ensayo"] = sheet['B7'].value
+                file_content["dist_horizontal_fuente_sondeo"] = sheet['B8'].value
+                file_content["nombre_ensayo"] = sheet['B9'].value
+                file_content["smooth"] = sheet['B10'].value
+
+                return
+
             else:
                 tkinter.messagebox.showerror("Error", "El archivo está vacío o no está en el formato correcto.")
                 file_content = {"cliente":"",
                     "proyecto": "",
-                    "OS": ""
-                    }
+                    "orden_servicio": "",
+                    "fecha_medicion": "",
+                    "operador": "",
+                    "interpreto": "",
+                    "prof_ensayo": "",
+                    "dist_horizontal_fuente_sondeo": "",
+                    "nombre_ensayo": "",
+                    "smooth":""
+                }
                 browse_entry.configure(state=NORMAL)
                 browse_entry.delete(0, "end")
                 browse_entry.configure(state=DISABLED) 
                 
                 return
-        
-            #Última fila con información
-            ultima_fila = 12
-            for fila in range(12, sheet.max_row + 1):
-                celda = sheet[f'A{fila}']
-                if celda.value:  # Verifica si la celda tiene contenido
-                    ultima_fila = fila
-
-            if ultima_fila == 12:
-                tkinter.messagebox.showerror("Error", "El archivo está vacío o no está en el formato correcto.")
-                file_content = {"cliente":"",
-                    "proyecto": "",
-                    "OS": ""
-                    }
-                browse_entry.configure(state=NORMAL)
-                browse_entry.delete(0, "end")
-                browse_entry.configure(state=DISABLED) 
-                
-                return
-            
-            #Obtiene los documentos a generar con sus respectivas coordenadas
-            for row in sheet.iter_rows(min_row=12, max_row=ultima_fila, values_only=True):  # Ajusta según la tabla
-                name = row[1]  
-                position = row[4]
-                geofonos =  row[19]  
-                separacion =  row[20]  
-
-                if name:
-                    name_parts = name.split()
-                    level = name_parts[0]  
-                    group = name_parts[1]  
-                    # Asegurarse de que la clave de nivel exista
-                    if level not in file_content:
-                        file_content[level] = {}
-
-                    # Agregar el grupo y la posición
-                    file_content[level][group] = position
-
-                    if geofonos != None:
-                        file_content[level]["geofonos"] = geofonos
-                        file_content[level]["separacion"] = separacion
-
 
     #Función para adjuntar archivo del input
     def open_file_path(directory_entry, file_content):
@@ -142,47 +125,23 @@ def open_masw_window(menu_window,images_path):
             return
 
         #Archivos necesarios para completar la verificación
-        verify_files = ['Espectro 01.png', 'Espectro 02.png', 'Espectro 03.png', 'G01.fv', 'G12.fv', 'G24.fv', 'Inversion 01.png', 'Inversion 02.png', 'Inversion 03.png', 'FIN.jpg', 'INI.jpg', 'Model.png']
+        verify_files = ['DH.txt', 'fotoDH1.png', 'inversion.png', 'localizacion.fv']
 
-        #Verifica que se haya insertado el input
-        if file_content["cliente"] != "" and file_content["proyecto"] != "" and file_content["OS"] != "":
-            
-            files = list(file_content.keys())
-            files.remove("cliente")
-            files.remove("proyecto")
-            files.remove("OS")
+        try:
+            assert set(os.listdir(f'{file_path}//{f}')) == set(verify_files), "Los elementos no coinciden"
 
-            #Verifica que en el directorio existan las carpetas correspondientes a los archivos
-            for f in files:
-                if f in directory_content:
-                    try:
-                        assert set(os.listdir(f'{file_path}//{f}')) == set(verify_files), "Los elementos no coinciden"
+            directory_entry.configure(state=NORMAL)  # Habilita el campo para insertar el texto
+            directory_entry.delete(0, "end")  # Limpia el contenido actual del campo
+            directory_entry.insert(0, file_path)  # Inserta la ruta del archivo en el campo
+            directory_entry.configure(state=DISABLED)  # Desactiva nuevamente el campo para que no se edite
 
-                        directory_entry.configure(state=NORMAL)  # Habilita el campo para insertar el texto
-                        directory_entry.delete(0, "end")  # Limpia el contenido actual del campo
-                        directory_entry.insert(0, file_path)  # Inserta la ruta del archivo en el campo
-                        directory_entry.configure(state=DISABLED)  # Desactiva nuevamente el campo para que no se edite
+        except AssertionError as e:
 
-                    except AssertionError as e:
-
-                        directory_entry.configure(state=NORMAL)  # Habilita el campo para insertar el texto
-                        directory_entry.delete(0, "end")  # Limpia el contenido actual del campo
-                        directory_entry.configure(state=DISABLED)  # Desactiva nuevamente el campo para que no se edite
-
-                        tkinter.messagebox.showerror("Error", "No están todos los archivos necesarios para ejecutar el aplicativo.")
-                        return
-                
-                else:
-                    tkinter.messagebox.showerror("Error", "La carpeta con los archivos de entrada no coincide con el input suministrado.")
-                    directory_entry.configure(state=NORMAL)  # Habilita el campo para insertar el texto
-                    directory_entry.delete(0, "end")  # Limpia el contenido actual del campo
-                    directory_entry.configure(state=DISABLED)  # Desactiva nuevamente el campo para que no se edite
-                    return
-        else:
-            tkinter.messagebox.showerror("Error", "Debe seleccionar primero el archivo de entrada.")
             directory_entry.configure(state=NORMAL)  # Habilita el campo para insertar el texto
             directory_entry.delete(0, "end")  # Limpia el contenido actual del campo
             directory_entry.configure(state=DISABLED)  # Desactiva nuevamente el campo para que no se edite
+
+            tkinter.messagebox.showerror("Error", "No están todos los archivos necesarios para ejecutar el aplicativo.")
             return
 
     #Label seleccionar archivo de entrada
@@ -227,23 +186,25 @@ def open_masw_window(menu_window,images_path):
         text="Generar reportes",
         width=100,
         height=30,
-        command= lambda: masw_module(file_content,directory_entry.get(),window) 
+        command= lambda: dh_module(file_content,directory_entry.get(),window) 
     )
     run_button.place(x=(width - 100) // 2, y=140)
     
 
+
 """
-EJECUTA EL MÓDULO DE MASW
+EJECUTA EL MÓDULO DE DH
 """
-def masw_module(file_content,inputs_path,window):
+def dh_module(file_content,inputs_path,window):
 
     #Verifica que se haya seleccionado la ruta de lso archivos de entrada
     if inputs_path == "":
         tkinter.messagebox.showerror("Error", "Favor seleccionar la ruta de los archivos de entrada.")
         return
-    
+
     #Verifica que se haya seleccionado el archivo de entrada
-    if file_content["cliente"] == "" or file_content["proyecto"] == "" or file_content["OS"] == "":
+    if file_content["cliente"] == "" or file_content["proyecto"] == "" or file_content["orden_servicio"] == "" or file_content["fecha_medicion"] == "" or file_content["operador"] == "" or file_content["interpreto"] == "" or file_content["prof_ensayo"] == "" or file_content["dist_horizontal_fuente_sondeo"] == "" or file_content["nombre_ensayo"] == "" or file_content["smooth"] == "":
+
         tkinter.messagebox.showerror("Error", "Favor cargar archivo de entrada.")
         return
 
@@ -252,13 +213,13 @@ def masw_module(file_content,inputs_path,window):
     time.sleep(2)
 
     #Templates path
-    templates_path = get_file_paths("_templates")
-
+    templates_path = get_file_paths("_templates")  
+    
     #Ruta de documentos
     documents_path = os.path.expanduser("~\\Documents")
 
     # Crea la carpeta para almacenar
-    results_path = f'{documents_path}//GEOSTREAM//MASW'
+    results_path = f'{documents_path}//GEOSTREAM//DH'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     else:
@@ -271,53 +232,51 @@ def masw_module(file_content,inputs_path,window):
                 os.remove(ruta_elemento)
 
     #Crea la ventana de progreso
-    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("MASW - Generando memorias","logo.ico",f"0/{len(list(file_content.keys()))-3}")
+    ventana_progreso, barra_progreso, texto_progreso = create_progress_window("DH - Generando memorias","logo.ico",f"0/1")
 
-    #Itera por los archivos
-    cont = 1
-    for key in list(file_content.keys()):
-        if key != "cliente" and key != "proyecto" and key != "OS":
+    #Copia el template
+    os.mkdir(f'{documents_path}//GEOSTREAM//DH//')
+    shutil.copy(f'{templates_path}//template DH.xlsm', f'{documents_path}///GEOSTREAM//DH//template DH.xlsm')
 
-            #Copia el template
-            os.mkdir(f'{documents_path}//GEOSTREAM//MASW//{key}')
-            shutil.copy(f'{templates_path}//template lineas.xlsm', f'{documents_path}///GEOSTREAM//MASW//{key}//template lineas.xlsm')
+    #Abre el template
+    app = xw.App(visible=False)  
+    app.display_alerts = False 
+    app.screen_updating = False
+    libro = xw.Book(f'{documents_path}//GEOSTREAM//DH//template DH.xlsm', update_links=True)
 
-            #Abre el template
-            app = xw.App(visible=False)  
-            app.display_alerts = False 
-            app.screen_updating = False
-            libro = xw.Book(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsm', update_links=True)
+    #Modifica encabezado
+    modificar_encabezado(libro,file_content)
 
-            #Modifica hoja A1
-            modificar_hoja_A1(libro,file_content,key)
+    """+
+    #Modificar hoja A2 a la A4
+    modificar_hoja_A2_A3_A4(libro,key,inputs_path)
 
-            #Modificar hoja A2 a la A4
-            modificar_hoja_A2_A3_A4(libro,key,inputs_path)
+    #Modificar hoja VS
+    modificar_hoja_Vs(libro,key,inputs_path)
 
-            #Modificar hoja VS
-            modificar_hoja_Vs(libro,key,inputs_path)
+    #Modifica la hoja de modulos elastivos
+    modificar_modulos_elasticos(libro,key)
 
-            #Modifica la hoja de modulos elastivos
-            modificar_modulos_elasticos(libro,key)
+    #Modificar hoja fotos: Espectro G01, Espectro G12, Espectro G24, Inversión Linea G01, Inversión Linea G12, Inversión Linea G24, Fotos Linea
+    modificar_hoja_fotos(libro,key,inputs_path)
 
-            #Modificar hoja fotos: Espectro G01, Espectro G12, Espectro G24, Inversión Linea G01, Inversión Linea G12, Inversión Linea G24, Fotos Linea
-            modificar_hoja_fotos(libro,key,inputs_path)
+    #Imprimir en PDF la memoria
+    save_to_pdf(libro, key, documents_path )
 
-            #Imprimir en PDF la memoria
-            save_to_pdf(libro, key, documents_path )
+    # Guardar los cambios
+    libro.save()
 
-            # Guardar los cambios
-            libro.save()
+    #Cerrar
+    libro.close()
+    app.quit()
 
-            #Cerrar
-            libro.close()
-            app.quit()
-
-            #Actualizar barra de progreso
-            barra_progreso.set(cont / (len(list(file_content.keys()))-3))  # Actualizar progreso
-            texto_progreso.set(f"{cont}/{(len(list(file_content.keys()))-3)}")
-            ventana_progreso.update_idletasks()  # Forzar actualización de la ventana
-            cont+=1
+    #Actualizar barra de progreso
+    barra_progreso.set(cont / (len(list(file_content.keys()))-3))  # Actualizar progreso
+    texto_progreso.set(f"{cont}/{(len(list(file_content.keys()))-3)}")
+    ventana_progreso.update_idletasks()  # Forzar actualización de la ventana
+    cont+=1
+    """
+            
 
     #Compilar versión final
     merger = PyPDF2.PdfMerger()
@@ -333,12 +292,32 @@ def masw_module(file_content,inputs_path,window):
     tkinter.messagebox.showinfo("Info","Memorias generadas. Revisar en Documentos.")
     window.destroy()
 
-def modificar_hoja_A1(libro,file_content,key):
+def modificar_encabezado(libro,file_content):
 
-    hoja = libro.sheets[0]  
-    hoja["B3"].value = file_content["proyecto"]
-    hoja["E3"].value = file_content["OS"]
-    hoja["E4"].value = file_content["cliente"]
+    file_content = {"cliente":"",
+                    "proyecto": "",
+                    "": "",
+                    "": "",
+                    "": "",
+                    "": "",
+                    "": "",
+                    "": "",
+                    "nombre_ensayo": "",
+                    "smooth":""
+                    }
+
+    hoja = libro.sheets["Resultados"]  
+    hoja["C7"].value = file_content["proyecto"]
+    hoja["C8"].value = file_content["cliente"]
+    hoja["D9"].value = file_content["orden_servicio"]
+    hoja["C10"].value = file_content["operador"]
+    hoja["C11"].value = file_content["interpreto"]
+    hoja["Q7"].value = file_content["fecha_medicion"]
+    hoja["Q9"].value = file_content["prof_ensayo"]
+    hoja["Q10"].value = file_content["dist_horizontal_fuente_sondeo"]
+
+
+    
     hoja["B6"].value = key
     hoja["B10"].value = file_content[key]["geofonos"]
     hoja["B11"].value = file_content[key]["separacion"]

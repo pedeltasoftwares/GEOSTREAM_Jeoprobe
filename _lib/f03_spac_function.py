@@ -227,7 +227,7 @@ def open_spac_window(menu_window,images_path):
         text="Generar reportes",
         width=100,
         height=30,
-        command= lambda: spac_module(file_content,directory_entry.get()) 
+        command= lambda: spac_module(file_content,directory_entry.get(),window) 
     )
     run_button.place(x=(width - 100) // 2, y=140)
     
@@ -236,14 +236,7 @@ def open_spac_window(menu_window,images_path):
 """
 EJECUTA EL MÓDULO DE SPAC
 """
-def spac_module(file_content,inputs_path):
-
-    #Cierra todos los procesos de excel abiertos
-    kill_excel_processes()
-    time.sleep(2)
-
-    #Templates path
-    templates_path = get_file_paths("_templates")
+def spac_module(file_content,inputs_path,window):
 
     #Verifica que se haya seleccionado la ruta de lso archivos de entrada
     if inputs_path == "":
@@ -254,7 +247,14 @@ def spac_module(file_content,inputs_path):
     if file_content["cliente"] == "" or file_content["proyecto"] == "" or file_content["OS"] == "":
         tkinter.messagebox.showerror("Error", "Favor cargar archivo de entrada.")
         return
-    
+
+    #Cierra todos los procesos de excel abiertos
+    kill_excel_processes()
+    time.sleep(2)
+
+    #Templates path
+    templates_path = get_file_paths("_templates")
+
     #Ruta de documentos
     documents_path = os.path.expanduser("~\\Documents")
 
@@ -329,6 +329,7 @@ def spac_module(file_content,inputs_path):
 
     ventana_progreso.destroy()
     tkinter.messagebox.showinfo("Info","Memorias generadas. Revisar en Documentos.")
+    window.destroy()
 
 def modificar_hoja_A1(libro,file_content,key):
 
