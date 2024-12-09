@@ -11,6 +11,7 @@ from _lib.f01_masw_function import open_masw_window
 from _lib.f02_ter_function import open_ter_window
 from _lib.f03_spac_function import open_spac_window
 from _lib.f04_lrs_function import open_lrs_window
+from _lib.f06_chs_function import open_chs_window
 
 #Paths
 images_path = get_file_paths("_images")
@@ -27,9 +28,12 @@ if verificar_mac_y_ejecutar_programa():
     def ejecutar_lrs():
         open_lrs_window(menu_window,images_path)
 
+    def ejecutar_chs():
+        open_chs_window(menu_window,images_path)
+
     def ejecutar_ter():
         open_ter_window(menu_window,images_path)
-    
+
 
     #Inicializa la ventana
     menu_window = CTk()
@@ -108,6 +112,27 @@ if verificar_mac_y_ejecutar_programa():
                     command=ejecutar_lrs)
     lrs.place(x=20, y=135)
 
+
+    #Botón CHS
+    chs_image = Image.open(os.path.join(images_path, "chs.png"))
+    chs_image = chs_image.resize((30, 30), Image.LANCZOS)
+    chs_image_tk = ImageTk.PhotoImage(chs_image)
+    chs = CTkButton(master=menu_window, 
+                    text="CHS", 
+                    image = chs_image_tk,
+                    width=150, 
+                    height=40, 
+                    compound="left",
+                    font=('Gothic A1',15),
+                    fg_color="#3A3A3A",
+                    hover_color="#4C4C4C",
+                    text_color="#E0E0E0",
+                    corner_radius=5,
+                    border_width=2,
+                    border_color="#606060",
+                    command=ejecutar_chs)
+    chs.place(x=200, y=25)
+
     #Botón TER
     ter_image = Image.open(os.path.join(images_path, "ter.png"))
     ter_image = ter_image.resize((30, 30), Image.LANCZOS)
@@ -126,7 +151,7 @@ if verificar_mac_y_ejecutar_programa():
                     border_width=2,
                     border_color="#606060",
                     command=ejecutar_ter)
-    ter.place(x=200, y=25)
+    ter.place(x=200, y=80)
 
     #Ejecuta la ventana
     menu_window.mainloop()
