@@ -11,6 +11,7 @@ from _lib.f01_masw_function import open_masw_window
 from _lib.f02_ter_function import open_ter_window
 from _lib.f03_spac_function import open_spac_window
 from _lib.f04_lrs_function import open_lrs_window
+from _lib.f05_dh_function import open_dh_window
 from _lib.f06_chs_function import open_chs_window
 
 #Paths
@@ -34,6 +35,8 @@ if verificar_mac_y_ejecutar_programa():
     def ejecutar_ter():
         open_ter_window(menu_window,images_path)
 
+    def ejecutar_dh():
+        open_dh_window(menu_window,images_path)
 
     #Inicializa la ventana
     menu_window = CTk()
@@ -111,6 +114,25 @@ if verificar_mac_y_ejecutar_programa():
                     border_color="#606060",
                     command=ejecutar_lrs)
     lrs.place(x=20, y=135)
+    #Boton DH
+    dh_image = Image.open(os.path.join(images_path, "dh.png"))
+    dh_image = dh_image.resize((40, 30), Image.LANCZOS)
+    dh_image_tk = ImageTk.PhotoImage(dh_image)
+    dh = CTkButton(master=menu_window,
+                    text="DH",
+                    image=dh_image_tk,
+                    width=150,
+                    height=40,
+                    compound="left",
+                    font=('Gothic A1', 15),
+                    fg_color="#3A3A3A",
+                    hover_color="#4C4C4C",
+                    text_color="#E0E0E0",
+                    corner_radius=5,
+                    border_width=2,
+                    border_color="#606060",
+                    command=ejecutar_dh)
+    dh.place(x=20, y=190)
 
 
     #Botón CHS
