@@ -351,7 +351,8 @@ def save_to_pdf(libro, key, documents_path ):
     for pdf in sheet_names:
         os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
 
-def leer_hoja_analisis(libro,):
+def leer_hoja_analisis(libro):
 
     #tener la ruta
     #abrir y guardar
+    pass
