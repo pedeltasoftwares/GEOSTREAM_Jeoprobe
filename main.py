@@ -134,7 +134,6 @@ if verificar_mac_y_ejecutar_programa():
                     command=ejecutar_dh)
 
     dh.place(x=20, y=190)
-    dh.configure(state="disabled")
 
     #Botón CHS
     chs_image = Image.open(os.path.join(images_path, "chs.png"))
@@ -155,7 +154,6 @@ if verificar_mac_y_ejecutar_programa():
                     border_color="#606060",
                     command=ejecutar_chs)
     chs.place(x=200, y=25)
-    chs.configure(state="disabled")
 
     #Botón TER
     ter_image = Image.open(os.path.join(images_path, "ter.png"))
