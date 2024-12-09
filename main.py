@@ -13,6 +13,7 @@ from _lib.f03_spac_function import open_spac_window
 from _lib.f04_lrs_function import open_lrs_window
 from _lib.f05_dh_function import open_dh_window
 from _lib.f06_chs_function import open_chs_window
+from _lib.f07_fotos_function import open_fotos_window
 
 #Paths
 images_path = get_file_paths("_images")
@@ -37,6 +38,9 @@ if verificar_mac_y_ejecutar_programa():
 
     def ejecutar_dh():
         open_dh_window(menu_window,images_path)
+
+    def ejecutar_fotos():
+        open_fotos_window(menu_window,images_path)
 
     #Inicializa la ventana
     menu_window = CTk()
@@ -174,6 +178,26 @@ if verificar_mac_y_ejecutar_programa():
                     border_color="#606060",
                     command=ejecutar_ter)
     ter.place(x=200, y=80)
+
+    #Botón FOTOS
+    fotos_image = Image.open(os.path.join(images_path, "fotos.png"))
+    fotos_image = fotos_image.resize((30, 30), Image.LANCZOS)
+    fotos_image_tk = ImageTk.PhotoImage(fotos_image)
+    fotos = CTkButton(master=menu_window, 
+                    text="FOTOS", 
+                    image = fotos_image_tk,
+                    width=150, 
+                    height=40, 
+                    compound="left",
+                    font=('Gothic A1',15),
+                    fg_color="#3A3A3A",
+                    hover_color="#4C4C4C",
+                    text_color="#E0E0E0",
+                    corner_radius=5,
+                    border_width=2,
+                    border_color="#606060",
+                    command=ejecutar_fotos)
+    fotos.place(x=200, y=135)
 
     #Ejecuta la ventana
     menu_window.mainloop()
