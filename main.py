@@ -138,7 +138,6 @@ if verificar_mac_y_ejecutar_programa():
                     command=ejecutar_dh)
 
     dh.place(x=20, y=190)
-    dh.configure(state="disabled")
 
     #Botón CHS
     chs_image = Image.open(os.path.join(images_path, "chs.png"))

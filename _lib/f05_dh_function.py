@@ -14,7 +14,7 @@ import math
 import PyPDF2
 from _lib.progress_window import create_progress_window
 from _lib.set_cell_border import set_border
-
+import re
 def open_dh_window(menu_window,images_path):
 
     # Crear una nueva ventana
@@ -250,7 +250,11 @@ def dh_module(file_content,inputs_path,window):
     #Modificar_hoja_fotos:
     modificar_hoja_fotos(libro,inputs_path)
 
+    #leer txt y retorna variable con los datos necesarios
+    parametros = leer_txt(inputs_path)
 
+    #pasar parametros a excel
+    parametros_excel(libro, parametros)
 
     #Imprimir en PDF la memoria
     #save_to_pdf(libro, key, documents_path )
@@ -263,22 +267,11 @@ def dh_module(file_content,inputs_path,window):
     app.quit()
 
     #Actualizar barra de progreso
-    barra_progreso.set(cont / (len(list(file_content.keys()))-3))  # Actualizar progreso
-    texto_progreso.set(f"{cont}/{(len(list(file_content.keys()))-3)}")
+    barra_progreso.set(1/1)  # Actualizar progreso
+    texto_progreso.set("1/1")
     ventana_progreso.update_idletasks()  # Forzar actualización de la ventana
-    cont+=1
 
-            
 
-    #Compilar versión final
-    merger = PyPDF2.PdfMerger()
-    for key in list(file_content.keys()):
-        if key != "cliente" and key != "proyecto" and key != "OS":
-            merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
-
-    # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//GEOSTREAM//MASW//combinado.pdf')
-    merger.close()
 
     ventana_progreso.destroy()
     tkinter.messagebox.showinfo("Info","Memorias generadas. Revisar en Documentos.")
@@ -351,8 +344,31 @@ def save_to_pdf(libro, key, documents_path ):
     for pdf in sheet_names:
         os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
 
-def leer_hoja_analisis(libro):
+def leer_txt(ruta_txt):
 
-    #tener la ruta
-    #abrir y guardar
-    pass
+    with open(f"{ruta_txt}//DH.txt","r") as archivo:
+        contenido_archivo = archivo.readlines()
+
+
+    #parametros a medir
+    parametros = {"Depth":[], "Vs internal": [], "Vp internal":[]}
+    regex = r"[-+]?\d*\.\d+"
+    for lineas in range(6,len(contenido_archivo)):
+        renglones = contenido_archivo[lineas]
+        renglones = renglones.split("\n")
+
+        floats = re.findall(regex, renglones[0])
+        floats = [float(num) for num in floats]
+        parametros["Depth"].append(floats[0])
+        parametros["Vs internal"].append(floats[3])
+        parametros["Vp internal"].append(floats[7])
+
+    return parametros
+
+
+def parametros_excel(libro, parametros):
+    hoja = libro.sheets["Analisis"]
+    for linea in range(0,len(parametros["Depth"])):
+        hoja[f"A{7+linea}"].value = parametros["Depth"][linea]
+        hoja[f"B{7 + linea}"].value = parametros["Vs internal"][linea]
+        hoja[f"C{7 + linea}"].value = parametros["Vp internal"][linea]
