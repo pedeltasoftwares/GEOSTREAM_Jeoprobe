@@ -257,7 +257,7 @@ def dh_module(file_content,inputs_path,window):
     parametros_excel(libro, parametros)
 
     #Imprimir en PDF la memoria
-    #save_to_pdf(libro, key, documents_path )
+    save_to_pdf(libro, documents_path )
 
     # Guardar los cambios
     libro.save()
@@ -270,8 +270,6 @@ def dh_module(file_content,inputs_path,window):
     barra_progreso.set(1/1)  # Actualizar progreso
     texto_progreso.set("1/1")
     ventana_progreso.update_idletasks()  # Forzar actualización de la ventana
-
-
 
     ventana_progreso.destroy()
     tkinter.messagebox.showinfo("Info","Memorias generadas. Revisar en Documentos.")
@@ -311,38 +309,23 @@ def modificar_hoja_fotos(libro,inputs_path):
                       top=hoja.range("B75").top,
                       left=hoja.range("C75").left,
                       width=900, height=350)
-def save_to_pdf(libro, key, documents_path ):
+def save_to_pdf(libro, documents_path ):
 
-    #hojas
-    sheet_names = ["Vs","Módulos elásticos", "Espectro G01", "Espectro G12", "Espectro G24", "Inversión Linea G01","Inversión Linea G12","Inversión Linea G24","Fotos Linea"]
-    for sheet_name in sheet_names:
 
-        #Obtiene la hoja
-        hoja = libro.sheets[sheet_name]
+    #Obtiene la hoja
+    hoja = libro.sheets["Resultados"]
 
-        #Guarda el pdf
-        output_pdf_path = f'{documents_path}//GEOSTREAM//MASW//{key}//{sheet_name}.pdf'
+    #Guarda el pdf
+    output_pdf_path = f'{documents_path}//GEOSTREAM//DH//combinado.pdf'
 
-        hoja.api.ExportAsFixedFormat(
-            Type=0,  # 0 es para PDF
-            Filename=output_pdf_path,
-            Quality=0,  # Calidad estándar
-            IncludeDocProperties=True,
-            IgnorePrintAreas=False,  # Respetar áreas de impresión
-            OpenAfterPublish=False
-        )   
-
-    #Compila en uno solo
-    merger = PyPDF2.PdfMerger()
-    for pdf in sheet_names:
-        merger.append(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
-
-    # Guardar el PDF combinado en un archivo
-    merger.write(f'{documents_path}//GEOSTREAM//MASW//{key}//{key}_combinado.pdf')
-    merger.close()
-
-    for pdf in sheet_names:
-        os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
+    hoja.api.ExportAsFixedFormat(
+        Type=0,  # 0 es para PDF
+        Filename=output_pdf_path,
+        Quality=0,  # Calidad estándar
+        IncludeDocProperties=True,
+        IgnorePrintAreas=False,  # Respetar áreas de impresión
+        OpenAfterPublish=False
+    )   
 
 def leer_txt(ruta_txt):
 
