@@ -14,6 +14,9 @@ import math
 import PyPDF2
 from _lib.progress_window import create_progress_window
 from _lib.set_cell_border import set_border
+from openpyxl import load_workbook
+from openpyxl.drawing.image import Image as Imagen_openpyxl
+from PIL import Image, ExifTags
 
 def open_masw_window(menu_window,images_path):
 
@@ -300,16 +303,30 @@ def masw_module(file_content,inputs_path,window):
             #Modifica la hoja de modulos elastivos
             modificar_modulos_elasticos(libro,key)
 
-            #Modificar hoja fotos: Espectro G01, Espectro G12, Espectro G24, Inversión Linea G01, Inversión Linea G12, Inversión Linea G24, Fotos Linea
-            modificar_hoja_fotos(libro,key,inputs_path)
-
-            #Imprimir en PDF la memoria
-            save_to_pdf(libro, key, documents_path )
-
             # Guardar los cambios
             libro.save()
 
             #Cerrar
+            libro.close()
+            app.quit()
+
+            #Modificar hoja fotos: Espectro G01, Espectro G12, Espectro G24, Inversión Linea G01, Inversión Linea G12, Inversión Linea G24, Fotos Linea
+            wb = load_workbook(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsm')
+            modificar_hoja_fotos(wb,key,inputs_path)
+            wb.save(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsx')
+
+            #Elimina las fotos creadas
+            os.remove(f"{inputs_path}\{key}\INI_corrected.jpg")
+            os.remove(f"{inputs_path}\{key}\FIN_corrected.jpg")
+            
+            #Imprimir en PDF la memoria
+            app = xw.App(visible=False)  
+            app.display_alerts = False 
+            app.screen_updating = False
+            libro = xw.Book(f'{documents_path}//GEOSTREAM//MASW//{key}//template lineas.xlsx', update_links=True)
+            save_to_pdf(libro, key, documents_path )
+            # Guardar los cambios
+            libro.save()
             libro.close()
             app.quit()
 
@@ -643,41 +660,43 @@ def modificar_hoja_fotos(libro,key,inputs_path):
     #Parsea el input_path
     inputs_path = inputs_path.replace("/", "\\")
 
+
     for sheet_name in ["Espectro G01","Espectro G12","Espectro G24","Inversión Linea G01","Inversión Linea G12","Inversión Linea G24"]:
 
         #Obtiene la hoja
-        hoja = libro.sheets[sheet_name]
-
-        #Obtiene las formas
-        shapes = hoja.api.Shapes
+        hoja = libro[sheet_name]
 
         if "Espectro G" in sheet_name:
             img_name = "Espectro 01.png" if "01" in sheet_name else ("Espectro 02.png" if "G12" in sheet_name else "Espectro 03.png")
-            range_insert = "A10"
-            width = "730"
         
         elif "Inversión Linea G" in sheet_name:
             img_name = "Inversion 01.png" if "01" in sheet_name else ("Inversion 02.png" if "G12" in sheet_name else "Inversion 03.png")
-            range_insert = "A10"
-            width = "730"
     
         #Borra y pega la imagen
-        hoja.pictures.add(f"{inputs_path}\{key}\{img_name}",
-                        top = hoja.range(range_insert).top,
-                        width = width)
-    
-    #Arregla la hoja de Fotos Linea
-    hoja = libro.sheets["Fotos Linea"]
+        img = Imagen_openpyxl(f"{inputs_path}\{key}\{img_name}")
+        img.width = 980   
+        img.height = 550  
+        hoja.add_image(img, "A8")
 
-    #Obtiene las formas
-    hoja.pictures.add(f"{inputs_path}\{key}\INI.jpg",
-                    top = hoja.range("A9").top,
-                    width = '290')
-            
-    hoja.pictures.add(f"{inputs_path}\{key}\FIN.jpg",
-                    left = hoja.range("G9").left,
-                    top = hoja.range("G9").top,
-                    width = '290')
+    #Arregla la hoja de Fotos Linea
+    corrected_img = correct_orientation(f"{inputs_path}\\{key}\\INI.jpg")
+    corrected_img.save(f"{inputs_path}\\{key}\\INI_corrected.jpg")
+
+    corrected_img = correct_orientation(f"{inputs_path}\\{key}\\FIN.jpg")
+    corrected_img.save(f"{inputs_path}\\{key}\\FIN_corrected.jpg")
+
+    
+    hoja = libro["Fotos Linea"]
+    img = Imagen_openpyxl(f"{inputs_path}\{key}\INI_corrected.jpg")
+    img.width = 380   
+    img.height = 500  
+    hoja.add_image(img, "A9")
+
+    img = Imagen_openpyxl(f"{inputs_path}\{key}\FIN_corrected.jpg")
+    img.width = 380   
+    img.height = 500  
+    hoja.add_image(img, "G9")
+    
 
 def save_to_pdf(libro, key, documents_path ):
 
@@ -712,3 +731,21 @@ def save_to_pdf(libro, key, documents_path ):
     for pdf in sheet_names:
         os.remove(f'{documents_path}//GEOSTREAM//MASW//{key}//{pdf}.pdf')
 
+def correct_orientation(image_path):
+    img = Image.open(image_path)
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        exif = img._getexif()
+        if exif is not None:
+            orientation_value = exif.get(orientation, None)
+            if orientation_value == 3:
+                img = img.rotate(180, expand=True)
+            elif orientation_value == 6:
+                img = img.rotate(270, expand=True)
+            elif orientation_value == 8:
+                img = img.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        pass
+    return img
