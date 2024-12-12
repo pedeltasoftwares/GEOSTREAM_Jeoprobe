@@ -96,6 +96,10 @@
   {
     "optionDest": "datas",
     "value": "C:\\Users\\Katerine Arias\\Documents\\JEOPROBE_automatizacion_memorias\\.venv\\Lib\\site-packages\\google;google/"
+  },
+  {
+    "optionDest": "datas",
+    "value": "C:\\Users\\Katerine Arias\\Documents\\JEOPROBE_automatizacion_memorias\\.venv\\Lib\\site-packages\\openpyxl;openpyxl/"
   }
  ],
  "nonPyinstallerOptions": {
