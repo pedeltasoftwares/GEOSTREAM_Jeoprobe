@@ -461,14 +461,6 @@ def modificar_hoja_Vs(libro,key,inputs_path):
 
     #Obtiene la hoja
     hoja_Vs = libro.sheets["Vs"]
-
-    #Parsea el input_path
-    inputs_path = inputs_path.replace("/", "\\")
-
-    hoja_Vs.pictures.add(f"{inputs_path}\{key}\Model.png",
-                        left = hoja_Vs.range("C26").left,
-                        top = hoja_Vs.range("C26").top,
-                        width = '400')
     
     #Modifica las figuras
     num_figuras = len(hoja_Vs.charts)
@@ -653,7 +645,8 @@ def modificar_modulos_elasticos(libro,key):
 
     #Max del eje Y
     chart.api[1].Axes(2).MaximumScale = round(hoja_modulos_elasticos[f"A{ultima_fila}"].value,0)
-    chart.api[1].Axes(2).MinimumScale = 0
+    chart.api[1].Axes(2).MinimumScaleIsAuto = False
+    chart.api[1].Axes(2).MinimumScale = round(0,0)
 
 def modificar_hoja_fotos(libro,key,inputs_path):
 
@@ -685,7 +678,6 @@ def modificar_hoja_fotos(libro,key,inputs_path):
     corrected_img = correct_orientation(f"{inputs_path}\\{key}\\FIN.jpg")
     corrected_img.save(f"{inputs_path}\\{key}\\FIN_corrected.jpg")
 
-    
     hoja = libro["Fotos Linea"]
     img = Imagen_openpyxl(f"{inputs_path}\{key}\INI_corrected.jpg")
     img.width = 380   
@@ -696,7 +688,12 @@ def modificar_hoja_fotos(libro,key,inputs_path):
     img.width = 380   
     img.height = 500  
     hoja.add_image(img, "G9")
-    
+
+    hoja = libro["Vs"]
+    img = Imagen_openpyxl(f"{inputs_path}\{key}\Model.png")
+    img.width = 500   
+    img.height = 200  
+    hoja.add_image(img, "D27")
 
 def save_to_pdf(libro, key, documents_path ):
 
